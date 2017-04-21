@@ -47,7 +47,7 @@ public class ReleaseFlagI007Processor extends AbstractFlaggedReleaseFlagProcesso
         preconditionsPredicates = Collections.synchronizedList(
                 Arrays.asList(FlaggedReleasePredicates.ACTIVE_AWARD,
                         FlaggedReleasePredicates.OPEN_PROCUREMENT_METHOD,
-                        FlaggedReleasePredicates.ELECTRONIC_SUBMISSION
+                        FlaggedReleasePredicates.ELECTRONIC_AUCTION
                 ));
     }
 }
