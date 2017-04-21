@@ -130,15 +130,11 @@ public class ReleaseFlaggingService {
     @PostConstruct
     protected void setProcessors() {
         releaseFlagProcessors = Collections.unmodifiableList(Arrays.asList(
-                //          releaseFlagI038Processor,
-                //          releaseFlagI003Processor,
                 releaseFlagI038Processor,
                 //          releaseFlagI003Processor,
                 releaseFlagI007Processor,
                 //          vietnamReleaseFlagI004Processor,
-                //          vietnamReleaseFlagI004Processor,
 //                releaseFlagI019Processor,
-//                releaseFlagI077Processor,
 //             releaseFlagI077Processor,
 //                releaseFlagI180Processor,
                 releaseFlagI002Processor,
@@ -146,7 +142,6 @@ public class ReleaseFlaggingService {
                 releaseFlagI171Processor
         ));
 
-        //   processAndSaveFlagsForAllReleases(this::logMessage);
         //   processAndSaveFlagsForAllReleases(this::logMessage);
     }
 }

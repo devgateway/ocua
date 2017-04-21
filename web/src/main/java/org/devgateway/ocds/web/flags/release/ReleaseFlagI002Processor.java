@@ -34,7 +34,6 @@ public class ReleaseFlagI002Processor extends AbstractFlaggedReleaseFlagProcesso
         preconditionsPredicates = Collections.synchronizedList(Arrays.asList(
                 FlaggedReleasePredicates.ACTIVE_AWARD,
                 FlaggedReleasePredicates.UNSUCCESSFUL_AWARD,
-                FlaggedReleasePredicates.ELECTRONIC_AUCTION,
                 FlaggedReleasePredicates.OPEN_PROCUREMENT_METHOD
         ));
     }
@@ -61,7 +60,6 @@ public class ReleaseFlagI002Processor extends AbstractFlaggedReleaseFlagProcesso
         //get the award
         Optional<Award> award = flaggable.getAwards().stream().filter(a ->
                 Award.Status.active.equals(a.getStatus())).findFirst();
-
 
         boolean result =
                 smallestBid.isPresent() && award.isPresent()
