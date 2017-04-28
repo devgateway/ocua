@@ -134,14 +134,14 @@ public class ReleaseFlaggingService {
                 //          releaseFlagI003Processor,
                 releaseFlagI007Processor,
                 //          vietnamReleaseFlagI004Processor,
-//                releaseFlagI019Processor,
-//             releaseFlagI077Processor,
-//                releaseFlagI180Processor,
+                releaseFlagI019Processor,
+                releaseFlagI077Processor,
+                releaseFlagI180Processor,
                 releaseFlagI002Processor,
                 releaseFlagI085Processor,
                 releaseFlagI171Processor
         ));
 
-        //   processAndSaveFlagsForAllReleases(this::logMessage);
+//           processAndSaveFlagsForAllReleases(this::logMessage);
     }
 }
