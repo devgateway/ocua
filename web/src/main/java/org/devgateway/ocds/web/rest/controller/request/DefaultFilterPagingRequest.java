@@ -23,17 +23,17 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
             value = "This corresponds the negated bidTypeId filter, matches elements that are NOT in the list of Ids")
     private List<String> notBidTypeId;
 
-    @EachPattern(regexp = "^[a-zA-Z0-9]*$")
+    @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This is the id of the organization/procuring entity. "
             + "Corresponds to the OCDS Organization.identifier")
     private List<String> procuringEntityId;
 
-    @EachPattern(regexp = "^[a-zA-Z0-9]*$")
+    @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This corresponds the negated procuringEntityId filter,"
             + " matches elements that are NOT in the list of Ids")
     private List<String> notProcuringEntityId;
 
-    // @EachPattern(regexp = "^[\\p{L}0-9]*$")
+    @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This is the id of the organization/supplier entity. "
             + "Corresponds to the OCDS Organization.identifier")
     private List<String> supplierId;

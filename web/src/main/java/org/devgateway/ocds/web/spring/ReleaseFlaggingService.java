@@ -64,6 +64,7 @@ public class ReleaseFlaggingService {
 
     private Collection<AbstractFlaggedReleaseFlagProcessor> releaseFlagProcessors;
 
+
     public void logMessage(String message) {
         logger.info(message);
     }
@@ -130,7 +131,9 @@ public class ReleaseFlaggingService {
     protected void setProcessors() {
         releaseFlagProcessors = Collections.unmodifiableList(Arrays.asList(
                 releaseFlagI038Processor,
+                //          releaseFlagI003Processor,
                 releaseFlagI007Processor,
+                //          vietnamReleaseFlagI004Processor,
                 releaseFlagI019Processor,
                 releaseFlagI077Processor,
                 releaseFlagI180Processor,
@@ -139,6 +142,6 @@ public class ReleaseFlaggingService {
                 releaseFlagI171Processor
         ));
 
-   //   processAndSaveFlagsForAllReleases(this::logMessage);
+//           processAndSaveFlagsForAllReleases(this::logMessage);
     }
 }

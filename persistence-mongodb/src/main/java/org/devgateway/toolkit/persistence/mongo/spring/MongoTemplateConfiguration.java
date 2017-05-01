@@ -38,7 +38,7 @@ public class MongoTemplateConfiguration {
                 .ensureIndex(new Index().on("additionalIdentifiers._id", Direction.ASC));
         mongoTemplate.indexOps(Organization.class).ensureIndex(
                 new Index().on("roles", Direction.ASC));
-        mongoTemplate.indexOps(Organization.class).ensureIndex(new Index().on("name", Direction.ASC).unique());
+        mongoTemplate.indexOps(Organization.class).ensureIndex(new Index().on("name", Direction.ASC));
         mongoTemplate.indexOps(DefaultLocation.class).ensureIndex(new Index().on("description", Direction.ASC));
         logger.info("Added mandatory Mongo indexes");
     }
