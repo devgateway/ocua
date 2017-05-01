@@ -98,7 +98,7 @@ public class ReleaseFlaggingService {
 
     public void processAndSaveFlagsForAllReleases(Consumer<String> logMessage) {
 
-        logMessage.accept("<b>RUNNING SCHEMA VALIDATION.</b>");
+        logMessage.accept("<b>RUNNING CORRUPTION FLAGGING.</b>");
 
         reinitialize();
 
