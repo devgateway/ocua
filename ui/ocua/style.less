@@ -23,6 +23,10 @@ header.branding{
   height: 64px;
   z-index: 1002;
 
+  .logo-container{
+    padding-left: 40px;
+  }
+
   h1, small{
     color: white;
   }
@@ -41,12 +45,8 @@ header.branding{
     color: white;
     display: inline-block;
     float: right;
-    padding-left: 15%;
     text-transform: uppercase;
     width: 100%;
-    @media only screen and (max-width: 1280px) {
-      margin-left: -140px;
-    }
     &>div{
       cursor: pointer;
       padding: 20px;
@@ -69,6 +69,9 @@ header.branding{
 
   .header-icons{
     cursor: pointer;
+    &.user-tools{
+      cursor: default;
+    }
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,6 +88,17 @@ header.branding{
         -moz-box-shadow: 0px 1px 10px 1px #db5151;
         -o-box-shadow: 0px 1px 10px 1px #db5151;
       }
+    }
+  }
+
+  @media (max-width: 1230px){
+    .logo-container{
+      padding-right: 0;
+    }
+
+    .menu>div{
+      padding-left: 0;
+      padding-right: 0;
     }
   }
 }
@@ -122,7 +136,7 @@ aside {
   position: fixed;
   bottom: @yearsBarBottom;
   border-bottom: 2px solid #c5c5c5;
-  z-index: 10000;
+  z-index: 9999;
   padding-left: 0;
   padding-right: 0;
   display: table;
@@ -179,7 +193,7 @@ footer.main-footer{
   right: 0;
   bottom: 0;
   background: @red;
-  z-index: 1;
+  z-index: 9998;
 }
 
 @active-color: #808080;
