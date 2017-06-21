@@ -84,7 +84,10 @@ class OCEChild extends OCApp{
 }
 
 const translations = {
-  en_US: require('../../web/public/languages/en_US.json')
+  en_US: Object.assign({},
+    require('../../web/public/languages/en_US.json'),
+    require('../../web/public/languages/en_US_ocua.json'),
+  )
 };
 
 const BILLION = 1000000000;
