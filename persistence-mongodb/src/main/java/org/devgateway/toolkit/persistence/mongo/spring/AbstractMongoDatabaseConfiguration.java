@@ -32,7 +32,7 @@ public abstract class AbstractMongoDatabaseConfiguration {
                 .ensureIndex(new Index().on("additionalIdentifiers._id", Direction.ASC));
         getTemplate().indexOps(Organization.class).ensureIndex(
                 new Index().on("roles", Direction.ASC));
-        getTemplate().indexOps(Organization.class).ensureIndex(new Index().on("name", Direction.ASC).unique());
+        getTemplate().indexOps(Organization.class).ensureIndex(new Index().on("name", Direction.ASC));
         getTemplate().indexOps(DefaultLocation.class).ensureIndex(new Index().on("description", Direction.ASC));
         getLogger().info("Added mandatory Mongo indexes");
     }

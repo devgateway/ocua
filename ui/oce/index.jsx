@@ -19,7 +19,6 @@ class OCApp extends React.Component {
     this.state = {
       dashboardSwitcherOpen: false,
       exporting: false,
-      locale: localStorage.oceLocale || 'en_US',
       width: 0,
       currentTab: 0,
       menuBox: '',
@@ -37,6 +36,12 @@ class OCApp extends React.Component {
         isAdmin: false,
       },
     };
+    const { oceLocale } = localStorage;
+    if (oceLocale && this.constructor.TRANSLATIONS[oceLocale]) {
+      this.state.locale = oceLocale;
+    } else {
+      this.state.locale = 'en_US';
+    }
   }
 
   componentDidMount() {
@@ -354,7 +359,7 @@ class OCApp extends React.Component {
     const { onSwitch } = this.props;
     return (
       <div className={cn('dash-switcher-wrapper', { open: dashboardSwitcherOpen })}>
-        <h1 onClick={() => this.toggleDashboardSwitcher()}>
+        <h1 onClick={e => this.toggleDashboardSwitcher(e)}>
           {this.t('general:title')}
           <i className="glyphicon glyphicon-menu-down" />
           <small>{this.t('general:subtitle')}</small>
