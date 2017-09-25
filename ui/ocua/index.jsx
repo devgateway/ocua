@@ -88,7 +88,6 @@ const translations = {
     require('../../web/public/languages/en_US_ocua.json'),
   )
 };
-translations['es_ES'] = translations['en_US'];
 
 const BILLION = 1000000000;
 const MILLION = 1000000;
