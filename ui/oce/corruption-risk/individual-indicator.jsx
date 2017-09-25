@@ -41,7 +41,7 @@ class IndividualIndicatorChart extends CustomPopupChart{
       y: totalTrueValues,
       type: 'scatter',
       fill: 'tonexty',
-      name: 'Flagged Procurements',
+      name: this.t('crd:individualIndicatorChart:flaggedProcurements'),
       hoverinfo: 'none',
       fillcolor: traceColors[0],
       line: {
@@ -52,7 +52,7 @@ class IndividualIndicatorChart extends CustomPopupChart{
       y: totalPrecondMetValues,
       type: 'scatter',
       fill: 'tonexty',
-      name: 'Eligible Procurements',
+      name: this.t('crd:individualIndicatorChart:eligibleProcurements'),
       hoverinfo: 'none',
       fillcolor: traceColors[1],
       line: {
@@ -103,13 +103,13 @@ class IndividualIndicatorChart extends CustomPopupChart{
           <div className="col-sm-12">
             <hr/>
           </div>
-          <div className="col-sm-8 text-right title">Procurements Flagged</div>
+          <div className="col-sm-8 text-right title">{this.t('crd:indicatorPage:individualIndicatorChart:popup:procurementsFlagged')}</div>
           <div className="col-sm-4 text-left info">{datum.get('totalTrue')}</div>
-          <div className="col-sm-8 text-right title">Eligible Procurements</div>
+          <div className="col-sm-8 text-right title">{this.t('crd:indicatorPage:individualIndicatorChart:popup:eligibleProcurements')}</div>
           <div className="col-sm-4 text-left info">{datum.get('totalPrecondMet')}</div>
-          <div className="col-sm-8 text-right title">% Eligible Procurements Flagged</div>
+          <div className="col-sm-8 text-right title">{this.t('crd:indicatorPage:individualIndicatorChart:popup:percentOfEligibleFlagged')}</div>
           <div className="col-sm-4 text-left info">{datum.get('percentTruePrecondMet').toFixed(2)} %</div>
-          <div className="col-sm-8 text-right title">% Procurements Eligible</div>
+          <div className="col-sm-8 text-right title">{this.t('crd:indicatorPage:individualIndicatorChart:popup:percentEligible')}</div>
           <div className="col-sm-4 text-left info">{datum.get('percentPrecondMet').toFixed(2)} %</div>
         </div>
         <div className="arrow"/>
@@ -122,8 +122,8 @@ import ProcurementsTable from "./procurements-table";
 
 class ProjectTable extends ProcurementsTable{
   getCustomEP(){
-    const {indicator} = this.props;
-    return `flags/${indicator}/releases?pageSize=10`;
+    const {corruptionType, indicator} = this.props;
+    return `flags/${indicator}/releases?pageSize=10&flagType=${corruptionType}`;
   }
 
   getClassName(){
@@ -140,7 +140,7 @@ class IndividualIndicatorPage extends translatable(CRDPage){
 
   render(){
     const {chart, table} = this.state;
-    const {indicator, translations, filters, years, monthly, months, width
+    const {corruptionType, indicator, translations, filters, years, monthly, months, width
     , styling} = this.props;
     return (
       <div className="page-corruption-type">
@@ -167,7 +167,7 @@ class IndividualIndicatorPage extends translatable(CRDPage){
         </p>
         <section>
           <h3 className="page-header">
-            Eligible Procurements and Flagged Procurements for {this.t(`crd:indicators:${indicator}:name`)}
+            {this.t('crd:indicatorPage:individualIndicatorChart:title').replace('$#$', this.t(`crd:indicators:${indicator}:name`))}
           </h3>
           <IndividualIndicatorChart
             indicator={indicator}
@@ -185,10 +185,11 @@ class IndividualIndicatorPage extends translatable(CRDPage){
         </section>
         <section>
           <h3 className="page-header">
-            List of Procurements Flagged for {this.t(`crd:indicators:${indicator}:name`)}
+            {this.t('crd:indicatorPage:projectTable:title').replace('$#$', this.t(`crd:indicators:${indicator}:name`))}
           </h3>
           <ProjectTable
             indicator={indicator}
+            corruptionType={corruptionType}
             requestNewData={(_, data) => this.setState({table: data})}
             data={table}
             translations={translations}

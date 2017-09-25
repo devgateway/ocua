@@ -67,7 +67,7 @@ class OCEChild extends OCApp{
         </h1>
         {dashboardSwitcherOpen &&
           <div className="dashboard-switcher">
-            <a href="javascript:void(0);" onClick={e => onSwitch('corruptionRiskDashboard')}>
+            <a href="javascript:void(0);" onClick={e => onSwitch('crd')}>
               Corruption Risk Dashboard
             </a>
           </div>
@@ -136,7 +136,7 @@ class OCEChild extends OCApp{
         <div className="header-tools row">
           <div className="col-xs-offset-4 col-md-offset-3 col-sm-5 menu">
             <div className="filters-hint">
-              Filter your data
+              {this.t('filters:hint')}
             </div>
             {this.filters()}
             {this.comparison()}
@@ -180,7 +180,8 @@ class OCEChild extends OCApp{
 }
 
 const translations = {
-  en_US: require('../../web/public/languages/en_US.json')
+  en_US: require('../../web/public/languages/en_US.json'),
+  es_ES: require('../../web/public/languages/es_ES.json')
 };
 
 const BILLION = 1000000000;
@@ -216,8 +217,8 @@ CorruptionRickDashboard.STYLING.charts.traceColors = ["#234e6d", "#3f7499", "#80
 
 class OceSwitcher extends ViewSwitcher{}
 
-OceSwitcher.views.default = OCEChild;
-OceSwitcher.views.corruptionRiskDashboard = CorruptionRickDashboard;
+OceSwitcher.views['m-and-e'] = OCEChild;
+OceSwitcher.views.crd = CorruptionRickDashboard;
 
 ReactDOM.render(<OceSwitcher
                   translations={translations['en_US']}
