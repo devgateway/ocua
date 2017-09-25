@@ -46,7 +46,6 @@ class OCEChild extends OCApp{
             {this.loginBox()}
           </div>
           <div className="col-sm-1 header-icons language-switcher">
-            {this.languageSwitcher()}
           </div>
         </header>
         <aside className="col-xs-4 col-md-3 col-lg-2">
@@ -89,6 +88,7 @@ const translations = {
     require('../../web/public/languages/en_US_ocua.json'),
   )
 };
+translations['es_ES'] = translations['en_US'];
 
 const BILLION = 1000000000;
 const MILLION = 1000000;
@@ -118,8 +118,9 @@ OCEChild.TRANSLATIONS = translations;
 
 class OceSwitcher extends ViewSwitcher{}
 
-OceSwitcher.views.default = OCEChild;
-OceSwitcher.views.corruptionRiskDashboard = CorruptionRickDashboard;
+OceSwitcher.views['m-and-e']= OCEChild;
+CorruptionRickDashboard.TRANSLATIONS = translations;
+OceSwitcher.views.crd = CorruptionRickDashboard;
 
 ReactDOM.render(<OceSwitcher
                     translations={translations['en_US']}
