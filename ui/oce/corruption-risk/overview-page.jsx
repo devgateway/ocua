@@ -8,13 +8,15 @@ import {colorLuminance} from "./tools";
 
 const pluckObj = (field, obj) => Object.keys(obj).map(key => obj[key][field]);
 
+const TRACES = ['COLLUSION', 'FRAUD', 'RIGGING'];
+
 class CorruptionType extends CustomPopupChart{
   groupData(data){
-    let grouped = {
-      COLLUSION: {},
-      FRAUD: {},
-      RIGGING: {}
-    };
+    let grouped = {};
+    TRACES.forEach(trace => {
+      grouped[trace] = {};
+    });
+
     const {monthly} = this.props;
     data.forEach(datum => {
       const type = datum.get('type');
@@ -63,7 +65,7 @@ class CorruptionType extends CustomPopupChart{
         y: values,
         type: 'scatter',
         fill: 'tonexty',
-        name: type,
+        name: this.t(`crd:corruptionType:${type}:name`),
         fillcolor: styling.charts.traceColors[index],
         line: {
           color: colorLuminance(styling.charts.traceColors[index], -.3)
@@ -91,7 +93,8 @@ class CorruptionType extends CustomPopupChart{
 
   getPopup(){
     const {popup} = this.state;
-    const {year, traceName: corruptionType} = popup;
+    const { year, traceIndex } = popup;
+    const corruptionType = TRACES[traceIndex];
     const {indicatorTypesMapping} = this.props;
     const data = this.groupData(super.getData());
     if(!data[corruptionType]) return null;
@@ -111,13 +114,13 @@ class CorruptionType extends CustomPopupChart{
           <div className="col-sm-12">
             <hr/>
           </div>
-          <div className="col-sm-7 text-right title">Indicators</div>
+          <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:indicators')}</div>
           <div className="col-sm-5 text-left info">{indicatorCount}</div>
-          <div className="col-sm-7 text-right title">Total Flags</div>
+          <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:totalFlags')}</div>
           <div className="col-sm-5 text-left info">{dataForPoint.flaggedCount}</div>
-          <div className="col-sm-7 text-right title">Total Procurements Flagged</div>
+          <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:totalProcurementsFlagged')}</div>
           <div className="col-sm-5 text-left info">{dataForPoint.flaggedProjectCount}</div>
-          <div className="col-sm-7 text-right title">% Total Procurements Flagged</div>
+          <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:percentFlagged')}</div>
           <div className="col-sm-5 text-left info">{dataForPoint.percent.toFixed(2)}%</div>
         </div>
         <div className="arrow"/>
@@ -153,7 +156,7 @@ class OverviewPage extends CRDPage{
     return (
       <div className="page-overview">
         <section className="chart-corruption-types">
-          <h3 className="page-header">Risk of Fraud, Collusion and Process Rigging Over Time</h3>
+          <h3 className="page-header">{this.t('crd:overview:overTimeChart:title')}</h3>
           <CorruptionType
             filters={filters}
             requestNewData={(_, corruptionType) => this.setState({corruptionType})}
@@ -169,7 +172,7 @@ class OverviewPage extends CRDPage{
           />
         </section>
         <section>
-          <h3 className="page-header">The Procurement Processes with the Most Flags</h3>
+          <h3 className="page-header">{this.t('crd:overview:topFlagged:title')}</h3>
           <TopFlaggedContracts
             filters={filters}
             data={topFlaggedContracts}
