@@ -61,7 +61,13 @@ class ProcurementsTable extends Table{
   row(entry, index){
     const {translations} = this.props;
     const tenderValue = entry.getIn(['tender', 'value']);
-    const awardValue = entry.getIn(['awards', 0, 'value']);
+    let awardValue;
+
+    const winningAward = entry.get('awards').find(award => award.get('status') == 'active');
+    if (winningAward) {
+      awardValue = winningAward.get('value');
+    }
+
     const tenderPeriod = entry.get('tenderPeriod');
     const startDate = new Date(tenderPeriod.get('startDate'));
     const endDate = new Date(tenderPeriod.get('endDate'));
@@ -93,7 +99,12 @@ class ProcurementsTable extends Table{
           </div>
         </td>
         <td>{tenderValue && tenderValue.get('amount')} {tenderValue && tenderValue.get('currency')}</td>
-        <td>{awardValue.get('amount')} {awardValue.get('currency')}</td>
+        <td>
+          {awardValue ?
+            awardValue.get('amount') + ' ' + awardValue.get('currency') :
+            'N/A'
+          }
+        </td>
         <td>{startDate.toLocaleDateString()}&mdash;{endDate.toLocaleDateString()}</td>
         <td>{this.t(`crd:corruptionType:${type}:name`)}</td>
         <Popup
