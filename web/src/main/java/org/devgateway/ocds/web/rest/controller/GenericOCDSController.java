@@ -5,8 +5,20 @@ package org.devgateway.ocds.web.rest.controller;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.ArrayUtils;
 import org.devgateway.ocds.persistence.mongo.Tender;
+import org.devgateway.ocds.persistence.mongo.constants.MongoConstants;
 import org.devgateway.ocds.web.rest.controller.request.DefaultFilterPagingRequest;
 import org.devgateway.ocds.web.rest.controller.request.GroupingFilterPagingRequest;
 import org.devgateway.ocds.web.rest.controller.request.YearFilterPagingRequest;
@@ -20,18 +32,9 @@ import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.CriteriaDefinition;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 
-import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
@@ -69,6 +72,25 @@ public abstract class GenericOCDSController {
         cal.set(Calendar.DAY_OF_YEAR, 1);
         Date start = cal.getTime();
         return start;
+    }
+
+    /**
+     * Creates a mongo $cond that calculates percentage of expression1/expression2.
+     * Checks for division by zero.
+     *
+     * @param expression1
+     * @param expression2
+     * @return
+     */
+    protected DBObject getPercentageMongoOp(String expression1, String expression2) {
+        return new BasicDBObject("$cond",
+                Arrays.asList(new BasicDBObject("$eq", Arrays.asList(ref(expression2),
+                        0)), new BasicDBObject("$literal", 0),
+                        new BasicDBObject("$multiply",
+                                Arrays.asList(new BasicDBObject("$divide",
+                                        Arrays.asList(ref(expression1),
+                                                ref(expression2))), 100))));
+
     }
 
     /**
@@ -137,11 +159,15 @@ public abstract class GenericOCDSController {
 
     /**
      * Appends flags.flaggedStats.type filter
-     *
      */
     protected Criteria getFlagTypeFilterCriteria(final DefaultFilterPagingRequest filter) {
         return createFilterCriteria("flags.flaggedStats.type", filter.getFlagType(), filter);
     }
+
+    protected Criteria getAwardStatusFilterCriteria(final DefaultFilterPagingRequest filter) {
+        return createFilterCriteria("awards.status", filter.getAwardStatus(), filter);
+    }
+
 
     /**
      * Adds monthly projection operation, when needed, if the
@@ -269,7 +295,7 @@ public abstract class GenericOCDSController {
      * @param filter
      * @return
      */
-    private Criteria getByTenderAmountIntervalCriteria(final DefaultFilterPagingRequest filter) {
+    protected Criteria getByTenderAmountIntervalCriteria(final DefaultFilterPagingRequest filter) {
         if (filter.getMaxTenderValue() == null && filter.getMinTenderValue() == null) {
             return new Criteria();
         }
@@ -292,7 +318,7 @@ public abstract class GenericOCDSController {
      * @param filter
      * @return
      */
-    private Criteria getByAwardAmountIntervalCriteria(final DefaultFilterPagingRequest filter) {
+    protected Criteria getByAwardAmountIntervalCriteria(final DefaultFilterPagingRequest filter) {
         if (filter.getMaxAwardValue() == null && filter.getMinAwardValue() == null) {
             return new Criteria();
         }
@@ -331,6 +357,10 @@ public abstract class GenericOCDSController {
      */
     protected Criteria getProcuringEntityIdCriteria(final DefaultFilterPagingRequest filter) {
         return createFilterCriteria("tender.procuringEntity._id", filter.getProcuringEntityId(), filter);
+    }
+
+    protected CriteriaDefinition getTextCriteria(DefaultFilterPagingRequest filter) {
+        return TextCriteria.forLanguage(MongoConstants.MONGO_LANGUAGE).matchingAny(filter.getText());
     }
 
     /**
@@ -452,7 +482,8 @@ public abstract class GenericOCDSController {
                 getByAwardAmountIntervalCriteria(filter),
                 getFlaggedCriteria(filter),
                 getFlagTypeFilterCriteria(filter),
-                getElectronicSubmissionCriteria(filter));
+                getElectronicSubmissionCriteria(filter),
+                getAwardStatusFilterCriteria(filter));
     }
 
     protected Criteria getYearDefaultFilterCriteria(final YearFilterPagingRequest filter, final String dateProperty) {
@@ -469,11 +500,18 @@ public abstract class GenericOCDSController {
                 getElectronicSubmissionCriteria(filter),
                 getFlaggedCriteria(filter),
                 getFlagTypeFilterCriteria(filter),
-                getYearFilterCriteria(filter, dateProperty));
+                getYearFilterCriteria(filter, dateProperty),
+                getAwardStatusFilterCriteria(filter));
     }
 
     protected MatchOperation getMatchDefaultFilterOperation(final DefaultFilterPagingRequest filter) {
         return match(getDefaultFilterCriteria(filter));
+    }
+
+
+    protected MatchOperation getMatchYearDefaultFilterOperation(final YearFilterPagingRequest filter,
+                                                                final String dateProperty) {
+        return match(getYearDefaultFilterCriteria(filter, dateProperty));
     }
 
     /**

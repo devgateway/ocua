@@ -6,14 +6,14 @@ import { fetchJson, debounce, cacheFn, range, pluck, callFunc } from '../tools';
 import OverviewPage from './overview-page';
 import CorruptionTypePage from './corruption-type';
 import IndividualIndicatorPage from './individual-indicator';
+import ContractsPage from './contracts';
+import ContractPage from './contracts/single';
 import Filters from './filters';
-import TotalFlags from './total-flags';
 import LandingPopup from './landing-popup';
 import { LOGIN_URL } from './constants';
 // eslint-disable-next-line no-unused-vars
 import style from './style.less';
-
-const CORRUPTION_TYPES = ['FRAUD', 'RIGGING', 'COLLUSION'];
+import Sidebar from './sidebar';
 
 // eslint-disable-next-line no-undef
 class CorruptionRiskDashboard extends React.Component {
@@ -81,16 +81,16 @@ class CorruptionRiskDashboard extends React.Component {
         {locale.split('_')[0]}
       </a>
     ));
-      /* return Object.keys(TRANSLATIONS).map(locale =>
-       *   (
-       *     <img
-       *     className="icon"
-       *     src={`assets/flags/${locale}.png`}
-       *     alt={`${locale} flag`}
-       *     
-       *     key={locale}
-       *   />),
-       * );*/
+    /* return Object.keys(TRANSLATIONS).map(locale =>
+     *   (
+     *     <img
+     *     className="icon"
+     *     src={`assets/flags/${locale}.png`}
+     *     alt={`${locale} flag`}
+     *     
+     *     key={locale}
+     *   />),
+     * );*/
   }
 
   setLocale(locale) {
@@ -143,6 +143,33 @@ class CorruptionRiskDashboard extends React.Component {
           months={months}
           width={width}
           styling={styling}
+          navigate={navigate}
+        />
+      );
+    } else if (page === 'contracts') {
+      const [, searchQuery] = route;
+      return (
+        <ContractsPage
+          filters={filters}
+          navigate={navigate}
+          translations={translations}
+          searchQuery={searchQuery}
+          doSearch={query => navigate('contracts', query)}
+        />
+      );
+    } else if (page === 'contract') {
+      const [, contractId] = route;
+      return (
+        <ContractPage
+          id={contractId}
+          translations={translations}
+          doSearch={query => navigate('contracts', query)}
+          indicatorTypesMapping={indicatorTypesMapping}
+          filters={filters}
+          years={years}
+          monthly={monthly}
+          months={months}
+          width={width}
         />
       );
     } else {
@@ -156,6 +183,7 @@ class CorruptionRiskDashboard extends React.Component {
           indicatorTypesMapping={indicatorTypesMapping}
           styling={styling}
           width={width}
+          navigate={navigate}
         />
       );
     }
@@ -230,9 +258,9 @@ class CorruptionRiskDashboard extends React.Component {
   }
 
   render() {
-    const { dashboardSwitcherOpen, corruptionType, filterBoxIndex, currentFiltersState,
+    const { dashboardSwitcherOpen, filterBoxIndex, currentFiltersState,
       appliedFilters, data, indicatorTypesMapping, allYears, allMonths, showLandingPopup,
-      disabledApiSecurity, locale } = this.state;
+      disabledApiSecurity } = this.state;
     const { onSwitch, route, navigate } = this.props;
     const translations = this.getTranslations();
     const [page] = route;
@@ -284,9 +312,9 @@ class CorruptionRiskDashboard extends React.Component {
         <Filters
           onUpdate={currentFiltersState => this.setState({ currentFiltersState })}
           onApply={filtersToApply => this.setState({
-            filterBoxIndex: null,
-            appliedFilters: filtersToApply,
-            currentFiltersState: filtersToApply,
+              filterBoxIndex: null,
+              appliedFilters: filtersToApply,
+              currentFiltersState: filtersToApply,
           })}
           translations={translations}
           currentBoxIndex={filterBoxIndex}
@@ -296,46 +324,20 @@ class CorruptionRiskDashboard extends React.Component {
           allYears={allYears}
           allMonths={allMonths}
         />
-        <aside className="col-xs-4 col-md-4 col-lg-3" id="crd-sidebar">
-          <div className="crd-description-text">
-            <h4 className="crd-overview-link" onClick={() => navigate('overview')}>
-              {this.t('crd:overview')}
-              <i className="glyphicon glyphicon-info-sign" />
-            </h4>
-            <p className="small">
-              {this.t('crd:description')}
-            </p>
-          </div>
-          <section role="navigation" className="row">
-            {CORRUPTION_TYPES.map((slug) => {
-               const count = Object.keys(indicatorTypesMapping)
-                 .filter(key => indicatorTypesMapping[key].types.indexOf(slug) > -1)
-                 .length;
-
-               return (
-                 <a
-                   href="javascript:void(0);"
-                   onClick={() => navigate('type', slug)}
-                   className={cn({ active: page === 'type' && slug === corruptionType })}
-                   key={slug}
-                   >
-                   <img src={`assets/icons/${slug}.png`} alt="Tab icon" />
-                   {this.t(`crd:corruptionType:${slug}:name`)} <span className="count">({count})</span>
-                 </a>
-               );
-            })}
-          </section>
-          <TotalFlags
-            filters={filters}
-            requestNewData={(path, newData) =>
-              this.setState({ data: this.state.data.setIn(['totalFlags'].concat(path), newData) })}
-            translations={translations}
-            data={data.get('totalFlags', Map())}
-            years={years}
-            months={months}
-            monthly={monthly}
-          />
-        </aside>
+        <Sidebar
+          page={page}
+          translations={translations}
+          indicatorTypesMapping={indicatorTypesMapping}
+          route={route}
+          navigate={navigate}
+          data={data}
+          requestNewData={(path, newData) =>
+            this.setState({ data: this.state.data.setIn(path, newData) })}
+          filters={filters}
+          years={years}
+          monthly={monthly}
+          months={months}
+        />
         <div className="col-xs-offset-4 col-md-offset-4 col-lg-offset-3 col-xs-8 col-md-8 col-lg-9 content">
           {this.getPage()}
         </div>
