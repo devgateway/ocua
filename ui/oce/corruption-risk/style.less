@@ -171,26 +171,11 @@
     }
   }
 
-  @media (max-height: 650px) {
-    position: relative;
-    aside{
-      .crd-description-text p{
-        display: none;
-      }
-      section[role=navigation]{
-        margin-top: 0;
-      }
-      .crd-description-text:hover p{
-        display: block;
-      }
-    }
-  }
-
   aside{
     @leftPadding: 30px;
     bottom:0;
-    background: #fafafa;
-    border-right: 1px solid #e6eaee;
+    background: transparent;
+    border-right: none;
     height: 100%;
     padding-left: @leftPadding;
     padding-top: 10px;
@@ -200,27 +185,34 @@
       font-size: 80%;
       line-height:128%;
     }
+
     i{
       color: #34ac45;
       float: right;
     }
+
     .total-flags{
-      background: #eff9ff;
-      margin-left: -30px;
-      position: absolute;
-      width: 100%;
-      height: 100%;
+      background: #fafafa;
+      margin: 15px -15px 0 -30px;
+      padding-bottom: 50px;
       @infoWidth: 250px;
-      .total-flags-counter{
-        width: @infoWidth;
-        margin: 20px auto 0 auto;
+      border-radius: 5px;
+      border: 1px solid #e7ebef;
+      border-left-style: none;
+      .counter{
+        padding: 10px 20px 15px 20px;
+        &:first-child {
+          border-bottom: 1px solid #e7ebef;
+        }
         .text{
-          float: left;
-          font-size: 1.5em;
-          padding-top: (2em - 1.5em) / 2;
+          font-size: 1.3em;
+          padding-top: .5em;
         }
         .count{
+          float: right;
           font-size: 2em;
+          font-weight: bold;
+          color: #144361;
         }
       }
       .crd-legend{
@@ -258,18 +250,16 @@
         }
       }
     }
-    .crd-overview-link{
-      cursor: pointer;
-      &:hover {
-        color: #35ae46;
-      }
-    }
+
     [role=navigation]{
       margin-left: -@leftPadding;
-      margin-top: 20px;
+      margin-top: -1px;
+      border-right: 1px solid #e7ebef;
+      border-bottom-right-radius: 5px;
       a{
         border-bottom: 1px solid #e6eaee;
         color: #000000;
+        background: #fafafa;
         cursor: pointer;
         display: block;
         font-size: 0.9em;
@@ -282,19 +272,70 @@
         &:first-child{
           border-top: 1px solid #e6eaee;
         }
-        &.active, &:hover{
-          background: #ffffff;
-          color: #2b9ff6;
-        }
+
         .count{
           color: #a9b2c0;
           display: inline-block;
           margin-left: 10px;
         }
+
+        &.archive-link {
+          background: #ecf7ff;
+        }
+
+        &.contracts-link{
+          background: #c2dcef;
+        }
+
         img{
           display: inline-block;
           margin-right: 10px;
           width: 32px;
+          &.white {
+            display: none;
+          }
+        }
+
+        &.active, &:hover{
+          background: #35ae46;
+          color: white;
+          .count {
+            color: white;
+          }
+
+          img.white {
+            display: inline-block;
+          }
+
+          img.blue {
+            display: none;
+          }
+        }
+      }
+
+      .crd-description{
+        padding: 8px 8px 8px 25px;
+        display: none;
+      }
+
+      .crd-description-link {
+        &.active {
+          &+.crd-description {
+            display: block;
+          }
+
+        }
+
+        &:hover, &.active{
+          .glyphicon {
+            color: white;
+          }
+        }
+
+        .glyphicon {
+          color: #34ac45;
+          padding: 5px 15px;
+          font-size: 1.5em;
         }
       }
     }
@@ -312,14 +353,21 @@
     margin-bottom: auto;
     padding: 20px 40px 0 30px;
 
-    .crd-popup{
-      @popupColor: #222c3c;
+    .crd-popup {
       @popupWidth: 400px;//if you're changing this you need to also change POPUP_WIDTH in constants.es6
       position: absolute;
       top: 0;
       left: 0;
       width: @popupWidth;
       height: 150px;
+
+      hr {
+        width: 50%;
+      }
+    }
+
+    .crosstab-box, .crd-popup{
+      @popupColor: #222c3c;
       z-index: 1;
       background: @popupColor;
       padding: 15px 5px;
@@ -333,11 +381,12 @@
       .info{
         color: white;
       }
-      hr{
-        width: 50%;
+
+      hr {
         opacity: .1;
         margin: 5px auto;
       }
+
       .arrow{
         background: @popupColor;
         position: absolute;
@@ -349,6 +398,14 @@
         transform: rotate(45deg);
       }
     }
+
+    .crosstab-box {
+      padding: 15px;
+      hr {
+        width: 100%;
+      }
+    }
+
 
     .chart-corruption-types{
       position: relative;
@@ -430,6 +487,10 @@
       }
     }
 
+    td.hoverable:hover, td.selectable.selected {
+      box-shadow: inset 0px 0px 0px 5px #ffd307;
+    }
+
     td.hoverable{
       position: relative;
       .crd-popup{
@@ -449,7 +510,6 @@
       }
 
       &:hover {
-        box-shadow: inset 0px 0px 0px 5px #ffd307;
         .crd-popup{
           display: block;
           top: auto;

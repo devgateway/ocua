@@ -19,8 +19,11 @@ class TotalFlagsChart extends backendYearFilterable(Chart){
       values: data.map(pluckImm('indicatorCount')).toJS(),
       labels: labels,
       textinfo: 'value',
-      hole: .85,
+      hole: .8,
       type: 'pie',
+      hoverlabel: {
+        bgcolor: '#144361'
+      },
       marker: {
         colors: ['#fac329', '#289df5', '#3372b1']//if you change this colors you'll have to also change it for the custom legend in ./style.less
       },
@@ -46,22 +49,47 @@ class TotalFlagsChart extends backendYearFilterable(Chart){
 
 TotalFlagsChart.endpoint = 'totalFlaggedIndicatorsByIndicatorType';
 
-class Counter extends backendYearFilterable(Visualization){
-  render(){
+class Counter extends backendYearFilterable(Visualization) {
+  render() {
     const {data} = this.props;
     if(!data) return null;
     return (
-      <div className="total-flags-counter">
-        <div className="text text-left">{this.t('crd:charts:totalFlags:title')}</div>
+      <div className="counter">
         <div className="count text-right">
-          {data.getIn([0, 'flaggedCount'], 0)}
+          {this.getCount()}
+        </div>
+        <div className="text text-left">
+          {this.getTitle()}
         </div>
       </div>
-    )
+    );
+  }
+};
+
+class FlagsCounter extends Counter {
+  getTitle() {
+    return this.t('crd:charts:totalFlags:title');
+  }
+
+  getCount() {
+    const { data } = this.props;
+    return data.getIn([0, 'flaggedCount'], 0);
   }
 }
 
-Counter.endpoint = 'totalFlags';
+FlagsCounter.endpoint = 'totalFlags';
+
+class ContractCounter extends Counter {
+  getTitle() {
+    return this.t('crd:sidebar:totalContracts:title');
+  }
+
+  getCount() {
+    return this.props.data;
+  }
+}
+
+ContractCounter.endpoint = 'ocds/release/count';
 
 class TotalFlags extends translatable(React.Component){
   constructor(...args){
@@ -91,9 +119,18 @@ class TotalFlags extends translatable(React.Component){
     if(!width) return null;
     return (
       <div className="total-flags">
-        <Counter
-          data={data.get('counter')}
-          requestNewData={(_, data) => requestNewData(['counter'], data)}
+        <ContractCounter
+          data={data.get('contractCounter')}
+          requestNewData={(_, data) => requestNewData(['contractCounter'], data)}
+          translations={translations}
+          filters={filters}
+          years={years}
+          months={months}
+          monthly={monthly}
+        />
+        <FlagsCounter
+          data={data.get('flagsCounter')}
+          requestNewData={(_, data) => requestNewData(['flagsCounter'], data)}
           translations={translations}
           filters={filters}
           years={years}
