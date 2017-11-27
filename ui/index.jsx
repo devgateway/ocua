@@ -1,1 +1,1 @@
-require('./oce-standalone/index.jsx');
+require('./ocua/index.jsx');
