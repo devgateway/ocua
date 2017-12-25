@@ -2,31 +2,32 @@ import { Map, List, Set } from 'immutable';
 import CRDPage from '../../page';
 import Visualization from '../../../visualization';
 import translatable from '../../../translatable';
-import styles from '../style.less';
-import TopSearch from '../top-search';
+import TopSearch from '../../top-search';
 import NrOfBidders from './donuts/nr-of-bidders';
 import NrOfContractsWithThisPE from './donuts/nr-contract-with-pe';
 import PercentPESpending from './donuts/percent-pe-spending';
+import PercentPESpendingPopup from './donuts/percent-pe-spending/popup';
 import Crosstab from '../../clickable-crosstab';
-import { CORRUPTION_TYPES } from '../../constants';
-
-const EMPTY_SET = Set();
+import CustomPopup from '../../custom-popup';
+import DonutPopup from '../../donut/popup';
+import { wireProps } from '../../tools';
+// eslint-disable-next-line no-unused-vars
+import styles from '../style.less';
 
 class Info extends translatable(Visualization) {
-  getCustomEP(){
+  getCustomEP() {
     const { id } = this.props;
     return `flaggedRelease/ocid/${id}`;
   }
 
   render() {
-    const { data, supplier } = this.props;
+    const { data, supplier, gotoSupplier } = this.props;
 
     const title = data.getIn(['tender', 'title']);
-    const suppliers = data.get('awards', List()).flatMap(award => award.get('suppliers'));
     const startDate = data.getIn(['tender', 'tenderPeriod', 'startDate']);
     const endDate = data.getIn(['tender', 'tenderPeriod', 'endDate']);
-    const award = data.get('awards', List()).find(award =>
-      award.get('status') != 'unsuccessful') || Map();
+    const award = data.get('awards', List()).find(a =>
+      a.get('status') !== 'unsuccessful') || Map();
 
     const flagCount = data.get('flags', List()).filter(flag => flag.get && flag.get('value')).count();
     return (
@@ -41,7 +42,7 @@ class Info extends translatable(Visualization) {
             <dd>{data.get('tag', []).join(', ')}</dd>
           </dl>
           <div className="col-md-4 flags">
-            <img src="assets/icons/flag.svg" alt="Flag icon" className="flag-icon"/>
+            <img src="assets/icons/flag.svg" alt="Flag icon" className="flag-icon" />
             &nbsp;
             {flagCount}
             &nbsp;{flagCount === 1 ? 'Flag' : 'Flags'}
@@ -73,11 +74,15 @@ class Info extends translatable(Visualization) {
                   <dt>{this.t('crd:contracts:baseInfo:suppliers')}</dt>
                   <dd>
                     {supplier ?
-                      supplier.get('name') :
+                      <a
+                        href={`#!/crd/supplier/${supplier.get('id')}`}
+                        onClick={gotoSupplier}
+                      >
+                        {supplier.get('name')}
+                      </a> :
                       this.t('general:undefined')
                     }
                   </dd>
-                  <a href="javascript:void(0);" onClick={() => this.setState({showAllSuppliers: true})}></a>
                 </dl>
               </td>
             </tr>
@@ -142,24 +147,24 @@ class Info extends translatable(Visualization) {
 }
 
 export default class Contract extends CRDPage {
-  constructor(...args){
+  constructor(...args) {
     super(...args);
     this.state = {
       contract: Map(),
       crosstab: Map(),
-      indicators: {}
-    }
+      indicators: {},
+    };
   }
 
   groupIndicators({ indicatorTypesMapping }, { contract }) {
     if (!indicatorTypesMapping || !Object.keys(indicatorTypesMapping).length || !contract) return;
     const newIndicators = {};
-    contract.get('flags', List()) .forEach((flag, name) => {
-      if(flag.get && flag.get('value')) {
-        indicatorTypesMapping[name].types.forEach(type => {
+    contract.get('flags', List()).forEach((flag, name) => {
+      if (flag.get && flag.get('value')) {
+        indicatorTypesMapping[name].types.forEach((type) => {
           newIndicators[type] = newIndicators[type] || [];
           newIndicators[type].push(name);
-        })
+        });
       }
     });
     this.setState({ indicators: newIndicators });
@@ -171,8 +176,8 @@ export default class Contract extends CRDPage {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    const indicatorsChanged = this.props.indicatorTypesMapping != nextProps.indicatorTypesMapping;
-    const contractChanged = this.state.contract != nextState.contract;
+    const indicatorsChanged = this.props.indicatorTypesMapping !== nextProps.indicatorTypesMapping;
+    const contractChanged = this.state.contract !== nextState.contract;
     if (indicatorsChanged || contractChanged) {
       this.groupIndicators(nextProps, nextState);
     }
@@ -211,8 +216,8 @@ export default class Contract extends CRDPage {
               data={crosstab.get(corruptionType)}
               indicators={indicators[corruptionType]}
               requestNewData={(_, data) => {
-                  const { crosstab } = this.state;
-                  this.setState({ crosstab: crosstab.set(corruptionType, data)})
+                const { crosstab } = this.state;
+                this.setState({ crosstab: crosstab.set(corruptionType, data)})
               }}
             />
           </div>
@@ -222,15 +227,9 @@ export default class Contract extends CRDPage {
   }
 
   render() {
-    const { contract, nrOfBidders, nrContracts, percentPESpending, crosstab,
-      indicators } = this.state;
+    const { contract } = this.state;
 
-    const { id, translations, doSearch, indicatorTypesMapping, filters, allYears,
-      years: selectedYears, width, months, monthly } = this.props;
-
-    const years = Set(allYears).equals(selectedYears) ?
-      EMPTY_SET :
-      selectedYears;
+    const { id, translations, doSearch, filters, width, gotoSupplier } = this.props;
 
     if (!contract) return null;
 
@@ -241,67 +240,59 @@ export default class Contract extends CRDPage {
     const procuringEntityId = contract.getIn(['tender', 'procuringEntity', 'id']) ||
       contract.getIn(['tender', 'procuringEntity', 'identifier', 'id']);
 
-    const donutSize = width / 3 - 100; 
+    const donutSize = width / 3 - 100;
 
     return (
       <div className="contract-page">
         <TopSearch
           doSearch={doSearch}
           translations={translations}
+          placeholder={this.t('crd:contracts:top-search')}
         />
         <Info
           id={id}
           data={contract}
           supplier={supplier}
           filters={filters}
-          requestNewData={(_, contract) => this.setState({contract})}
+          requestNewData={(_, contract) => this.setState({ contract })}
           translations={translations}
+          gotoSupplier={gotoSupplier}
         />
-        <section>
+
+        <section className="contract-statistics">
           <h2>
+            {this.t('crd:contracts:contractStatistics')}
           </h2>
           <div className="col-sm-4">
-            <NrOfBidders
+            <CustomPopup
               count={contract.getIn(['tender', 'tenderers'], List()).count()}
               contract={contract}
-              data={nrOfBidders}
-              filters={filters}
-              years={years}
-              monthly={monthly}
-              months={months}
-              requestNewData={(_, nrOfBidders) => this.setState({ nrOfBidders })}
-              translations={translations}
+              {...wireProps(this, 'nrOfBidders')}
+              Popup={DonutPopup}
+              Chart={NrOfBidders}
               width={donutSize}
             />
           </div>
           <div className="col-sm-4">
             {procuringEntityId && supplier &&
-              <NrOfContractsWithThisPE
+              <CustomPopup
                 procuringEntityId={procuringEntityId}
                 supplierId={supplier.get('id')}
-                data={nrContracts}
-                filters={filters}
-                years={years}
-                monthly={monthly}
-                months={months}
-                requestNewData={(_, nrContracts) => this.setState({ nrContracts })}
-                translations={translations}
+                {...wireProps(this, 'nrContracts')}
+                Popup={DonutPopup}
+                Chart={NrOfContractsWithThisPE}
                 width={donutSize}
               />
             }
           </div>
           <div className="col-sm-4">
             {procuringEntityId && supplier &&
-              <PercentPESpending
-                data={percentPESpending}
-                filters={filters}
+              <CustomPopup
                 procuringEntityId={procuringEntityId}
                 supplierId={supplier.get('id')}
-                years={years}
-                monthly={monthly}
-                months={months}
-                requestNewData={(_, percentPESpending) => this.setState({ percentPESpending })}
-                translations={translations}
+                {...wireProps(this, 'percentPESpending')}
+                Popup={PercentPESpendingPopup}
+                Chart={PercentPESpending}
                 width={donutSize}
               />
             }
@@ -312,3 +303,4 @@ export default class Contract extends CRDPage {
     );
   }
 }
+
