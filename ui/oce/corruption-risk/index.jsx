@@ -8,6 +8,10 @@ import CorruptionTypePage from './corruption-type';
 import IndividualIndicatorPage from './individual-indicator';
 import ContractsPage from './contracts';
 import ContractPage from './contracts/single';
+import SuppliersPage from './suppliers';
+import SupplierPage from './suppliers/single';
+import ProcuringEntitiesPage from './procuring-entities';
+import ProcuringEntityPage from './procuring-entities/single';
 import Filters from './filters';
 import LandingPopup from './landing-popup';
 import { LOGIN_URL } from './constants';
@@ -68,31 +72,6 @@ class CorruptionRiskDashboard extends React.Component {
     }));
   }
 
-  languageSwitcher() {
-    const { TRANSLATIONS } = this.constructor;
-    const { locale: selectedLocale } = this.state;
-    if (Object.keys(TRANSLATIONS).length <= 1) return null;
-    return Object.keys(TRANSLATIONS).map(locale => (
-      <a
-        href="javascript:void(0);"
-        onClick={() => this.setLocale(locale)}
-        className={cn({active: locale === selectedLocale})}
-      >
-        {locale.split('_')[0]}
-      </a>
-    ));
-    /* return Object.keys(TRANSLATIONS).map(locale =>
-     *   (
-     *     <img
-     *     className="icon"
-     *     src={`assets/flags/${locale}.png`}
-     *     alt={`${locale} flag`}
-     *     
-     *     key={locale}
-     *   />),
-     * );*/
-  }
-
   setLocale(locale) {
     this.setState({ locale });
     localStorage.oceLocale = locale;
@@ -104,7 +83,7 @@ class CorruptionRiskDashboard extends React.Component {
     const styling = this.constructor.STYLING || this.props.styling;
     const [page] = route;
 
-    const { appliedFilters, indicatorTypesMapping, width, data, allYears } = this.state;
+    const { appliedFilters, indicatorTypesMapping, width, data } = this.state;
 
     const { filters, years, months } = this.destructFilters(appliedFilters);
     const monthly = years.count() === 1;
@@ -147,71 +126,95 @@ class CorruptionRiskDashboard extends React.Component {
         />
       );
     } else if (page === 'contracts') {
-      const [, searchQuery] = route;
-      return (
-        <ContractsPage
-          filters={filters}
-          navigate={navigate}
-          translations={translations}
-          searchQuery={searchQuery}
-          doSearch={query => navigate('contracts', query)}
-          count={data.getIn(['totalFlags', 'contractCounter'])}
-        />
-      );
+      return this.renderArchive(ContractsPage, 'contracts');
     } else if (page === 'contract') {
-      const [, contractId] = route;
-      return (
-        <ContractPage
-          id={contractId}
-          translations={translations}
-          doSearch={query => navigate('contracts', query)}
-          indicatorTypesMapping={indicatorTypesMapping}
-          filters={filters}
-          years={years}
-          allYears={allYears}
-          monthly={monthly}
-          months={months}
-          width={width}
-        />
-      );
-    } else {
-      return (
-        <OverviewPage
-          filters={filters}
-          translations={translations}
-          years={years}
-          monthly={monthly}
-          months={months}
-          indicatorTypesMapping={indicatorTypesMapping}
-          styling={styling}
-          width={width}
-          navigate={navigate}
-        />
-      );
+      return this.renderSingle({
+        Component: ContractPage,
+        sgSlug: 'contract',
+        plSlug: 'contracts',
+        additionalProps: {
+          indicatorTypesMapping,
+        },
+      });
+    } else if (page === 'suppliers') {
+      return this.renderArchive(SuppliersPage, 'suppliers');
+    } else if (page === 'supplier') {
+      return this.renderSingle({
+        Component: SupplierPage,
+        sgSlug: 'supplier',
+        plSlug: 'suppliers',
+      });
+    } else if (page === 'procuring-entities') {
+      return this.renderArchive(ProcuringEntitiesPage, 'procuring-entities');
+    } else if (page === 'procuring-entity') {
+      return this.renderSingle({
+        Component: ProcuringEntityPage,
+        sgSlug: 'procuring-entity',
+        plSlug: 'procuring-entities',
+      });
     }
+    return (
+      <OverviewPage
+        filters={filters}
+        translations={translations}
+        years={years}
+        monthly={monthly}
+        months={months}
+        data={data.get('overview', Map())}
+        requestNewData={(path, newData) =>
+          this.setState({ data: this.state.data.setIn(['overview'].concat(path), newData) })}
+        indicatorTypesMapping={indicatorTypesMapping}
+        styling={styling}
+        width={width}
+        navigate={navigate}
+      />
+    );
   }
 
-  loginBox() {
-    if (this.state.user.loggedIn) {
-      return (
-        <a href="/preLogout?referrer=/ui/index.html?corruption-risk-dashboard">
-          <button className="btn btn-success">
-            {this.t('general:logout')}
-          </button>
-        </a>
-      );
-    }
-    return (<a href={LOGIN_URL}>
-      <button className="btn btn-success">
-        {this.t('general:login')}
-      </button>
-    </a>);
+  getTranslations() {
+    const { TRANSLATIONS } = this.constructor;
+    const { locale } = this.state;
+    return TRANSLATIONS[locale];
   }
 
-  toggleDashboardSwitcher(e) {
-    e.stopPropagation();
-    const { dashboardSwitcherOpen } = this.state;
-    this.setState({ dashboardSwitcherOpen: !dashboardSwitcherOpen });
+  wireProps(slug) {
+    const translations = this.getTranslations();
+    const { appliedFilters, width } = this.state;
+    const { filters, years, months } = this.destructFilters(appliedFilters);
+    return {
+      translations,
+      data: this.state.data.get(slug, Map()),
+      requestNewData: (path, newData) =>
+        this.setState({ data: this.state.data.setIn([slug].concat(path), newData) }),
+      filters,
+      years,
+      monthly: years.count() === 1,
+      months,
+      width,
+    };
+  }
+
+  t(str) {
+    const { locale } = this.state;
+    const { TRANSLATIONS } = this.constructor;
+    return TRANSLATIONS[locale][str] || TRANSLATIONS.en_US[str] || str;
+  }
+
+  fetchUserInfo() {
+    const noCacheUrl = new URI('/isAuthenticated').addSearch('time', Date.now());
+    fetchJson(noCacheUrl).then(({ authenticated, disabledApiSecurity }) => {
+      this.setState({
+        user: {
+          loggedIn: authenticated,
+        },
+        showLandingPopup: !authenticated || disabledApiSecurity,
+        disabledApiSecurity,
+      });
+    });
+  }
+
+  fetchIndicatorTypesMapping() {
+    fetchJson('/api/indicatorTypesMapping').then(data => this.setState({ indicatorTypesMapping: data }));
   }
 
   fetchYears() {
@@ -230,38 +233,76 @@ class CorruptionRiskDashboard extends React.Component {
     });
   }
 
-  fetchIndicatorTypesMapping() {
-    fetchJson('/api/indicatorTypesMapping').then(data => this.setState({ indicatorTypesMapping: data }));
+  toggleDashboardSwitcher(e) {
+    e.stopPropagation();
+    const { dashboardSwitcherOpen } = this.state;
+    this.setState({ dashboardSwitcherOpen: !dashboardSwitcherOpen });
   }
 
-  fetchUserInfo() {
-    const noCacheUrl = new URI('/isAuthenticated').addSearch('time', Date.now());
-    fetchJson(noCacheUrl).then(({ authenticated, disabledApiSecurity }) => {
-      this.setState({
-        user: {
-          loggedIn: authenticated,
-        },
-        showLandingPopup: !authenticated || disabledApiSecurity,
-        disabledApiSecurity,
-      });
-    });
+  loginBox() {
+    if (this.state.user.loggedIn) {
+      return (
+        <a href="/preLogout?referrer=/ui/index.html?corruption-risk-dashboard">
+          <button className="btn btn-success">
+            {this.t('general:logout')}
+          </button>
+        </a>
+      );
+    }
+    const hash = encodeURIComponent(location.hash);
+    return (
+      <a href={`${LOGIN_URL}${hash}`}>
+        <button className="btn btn-success">
+          {this.t('general:login')}
+        </button>
+      </a>
+    );
   }
 
-  t(str) {
-    const { locale } = this.state;
+  languageSwitcher() {
     const { TRANSLATIONS } = this.constructor;
-    return TRANSLATIONS[locale][str] || TRANSLATIONS.en_US[str] || str;
+    const { locale: selectedLocale } = this.state;
+    if (Object.keys(TRANSLATIONS).length <= 1) return null;
+    return Object.keys(TRANSLATIONS).map(locale => (
+      <a
+        href="javascript:void(0);"
+        onClick={() => this.setLocale(locale)}
+        className={cn({ active: locale === selectedLocale })}
+      >
+        {locale.split('_')[0]}
+      </a>
+    ));
   }
 
-  getTranslations(){
-    const { TRANSLATIONS } = this.constructor;
-    const { locale } = this.state;
-    return TRANSLATIONS[locale];
+  renderArchive(Component, slug) {
+    const { navigate, route } = this.props;
+    const [, searchQuery] = route;
+    return (
+      <Component
+        {...this.wireProps(slug)}
+        searchQuery={searchQuery}
+        doSearch={query => navigate(slug, query)}
+        navigate={navigate}
+      />
+    );
+  }
+
+  renderSingle({ Component, sgSlug, plSlug, additionalProps }) {
+    const { route, navigate } = this.props;
+    const [, id] = route;
+    return (
+      <Component
+        {...this.wireProps(sgSlug)}
+        id={id}
+        doSearch={query => navigate(plSlug, query)}
+        {...additionalProps}
+      />
+    );
   }
 
   render() {
-    const { dashboardSwitcherOpen, filterBoxIndex, currentFiltersState,
-      appliedFilters, data, indicatorTypesMapping, allYears, allMonths, showLandingPopup,
+    const { dashboardSwitcherOpen, filterBoxIndex, currentFiltersState, appliedFilters, data,
+      indicatorTypesMapping, allYears, allMonths, showLandingPopup,
       disabledApiSecurity } = this.state;
 
     const { onSwitch, route, navigate } = this.props;
@@ -281,7 +322,7 @@ class CorruptionRiskDashboard extends React.Component {
             redirectToLogin={!disabledApiSecurity}
             requestClosing={() => this.setState({ showLandingPopup: false })}
             translations={translations}
-            languageSwitcher={this.languageSwitcher.bind(this)}
+            languageSwitcher={(...args) => this.languageSwitcher(...args)}
           />
         }
         <header className="branding row">
@@ -290,14 +331,18 @@ class CorruptionRiskDashboard extends React.Component {
             <div className={cn('dash-switcher-wrapper', { open: dashboardSwitcherOpen })}>
               <h1
                 className="corruption-dash-title"
-                onClick={(e) => this.toggleDashboardSwitcher(e)}
+                onClick={e => this.toggleDashboardSwitcher(e)}
               >
                 {this.t('crd:title')}
                 <i className="glyphicon glyphicon-menu-down" />
               </h1>
               {dashboardSwitcherOpen &&
                 <div className="dashboard-switcher">
-                  <a href="javascript:void(0);" onClick={() => onSwitch('m-and-e')} onMouseDown={callFunc('stopPropagation')}>
+                  <a
+                    href="javascript:void(0);"
+                    onClick={() => onSwitch('m-and-e')}
+                    onMouseDown={callFunc('stopPropagation')}
+                  >
                     M&E Toolkit
                   </a>
                 </div>
@@ -313,11 +358,11 @@ class CorruptionRiskDashboard extends React.Component {
           <div className="col-sm-1" />
         </header>
         <Filters
-          onUpdate={currentFiltersState => this.setState({ currentFiltersState })}
+          onUpdate={newState => this.setState({ currentFiltersState: newState })}
           onApply={filtersToApply => this.setState({
-              filterBoxIndex: null,
-              appliedFilters: filtersToApply,
-              currentFiltersState: filtersToApply,
+            filterBoxIndex: null,
+            appliedFilters: filtersToApply,
+            currentFiltersState: filtersToApply,
           })}
           translations={translations}
           currentBoxIndex={filterBoxIndex}
@@ -361,6 +406,6 @@ CorruptionRiskDashboard.propTypes = {
 CorruptionRiskDashboard.TRANSLATIONS = {
   en_US: require('../../../web/public/languages/en_US.json'),
   es_ES: require('../../../web/public/languages/es_ES.json'),
-}
+};
 
 export default CorruptionRiskDashboard;
