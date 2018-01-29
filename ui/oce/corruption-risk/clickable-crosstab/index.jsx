@@ -1,8 +1,10 @@
-import Crosstab from './crosstab';
 import cn from 'classnames';
+import Crosstab from '../crosstab';
+import styles from './style.less';
+import { colorLuminance } from '../tools';
 
 class ClickableCrosstab extends Crosstab {
-  constructor(...args){
+  constructor(...args) {
     super(...args);
     this.state.currentlySelected = false;
   }
@@ -15,28 +17,28 @@ class ClickableCrosstab extends Crosstab {
         <td>{rowIndicatorName}</td>
         <td className="nr-flags">{rowData.getIn([rowIndicatorID, 'count'])}</td>
         {rowData.map((datum, indicatorID) => {
-           if(indicatorID == rowIndicatorID){
-             return <td className="not-applicable" key={indicatorID}>&mdash;</td>
-           } else {
-             const percent = datum.get('percent');
-             const color = Math.round(255 - 255 * (percent/100))
-             const style = {backgroundColor: `rgb(${color}, 255, ${color})`}
-             const selected = rowIndicatorID == currentlySelected.rowIndicatorID &&
-               indicatorID == currentlySelected.indicatorID;
-             return (
-               <td
-                 key={indicatorID}
-                 className={cn('selectable', { selected })}
-                 style={style}
-                 onClick={e => this.setState({ currentlySelected: { rowIndicatorID, indicatorID }})}
-               >
-                 {percent && percent.toFixed(2)} %
-               </td>
-             )
-           }
+          if(indicatorID === rowIndicatorID) {
+            return <td className="not-applicable" key={indicatorID}>&mdash;</td>;
+          } else {
+            const percent = datum.get('percent');
+            const color = colorLuminance('#00ff00', percent / 100 - .5);
+            const style = { backgroundColor: color };
+            const selected = rowIndicatorID === currentlySelected.rowIndicatorID &&
+              indicatorID === currentlySelected.indicatorID;
+            return (
+              <td
+                key={indicatorID}
+                className={cn('selectable', { selected })}
+                style={style}
+                onClick={() => this.setState({ currentlySelected: { rowIndicatorID, indicatorID }})}
+              >
+                {percent && percent.toFixed(2)} %
+              </td>
+            );
+          }
         }).toArray()}
       </tr>
-    )
+    );
   }
 
   maybeGetBox() {
@@ -75,19 +77,19 @@ class ClickableCrosstab extends Crosstab {
 
   componentDidMount() {
     super.componentDidMount();
-    document.body.addEventListener('click', () => this.setState({ currentlySelected: false }))
+    document.body.addEventListener('click', () => this.setState({ currentlySelected: false }));
   }
 
-  render(){
-    const {indicators, data} = this.props;
-    if(!data) return null;
-    if(!data.count()) return null;
+  render() {
+    const { data } = this.props;
+    if (!data) return null;
+    if (!data.count()) return null;
     return (
-      <div onClick={e => { e.stopPropagation() }}>
+      <div onClick={(e) => { e.stopPropagation(); }} className="clickable-crosstab">
         {super.render()}
         {this.maybeGetBox()}
       </div>
-    )
+    );
   }
 }
 
