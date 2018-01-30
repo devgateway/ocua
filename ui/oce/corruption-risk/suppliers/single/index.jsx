@@ -116,8 +116,10 @@ class Info extends translatable(Visualization) {
                 &nbsp;{flagCount === 1 ? 'Flag' : 'Flags'}
                 <br />
                 <small>
+                  (
                   {contractCount}
                   &nbsp;{contractCount === 1 ? 'Contract' : 'Contracts'}
+                  )
                 </small>
               </td>
             </tr>
@@ -127,27 +129,27 @@ class Info extends translatable(Visualization) {
           <tbody>
             <tr>
               <td>
-                {address && <dl>
-                  <dt>Supplier address</dt>
-                  <dd>
+                <dl>
+                  <dt>Supplier Address</dt>
+                  {address && <dd>
                     {address.get('streetAddress')}<br />
                     {address.get('locality')} /
                     &nbsp;
                     {address.get('postalCode')} /
                     &nbsp;
                     {address.get('countryName')}
-                  </dd>
-                </dl>}
+                  </dd>}
+                </dl>
               </td>
               <td>
-                {contact && <dl>
+                <dl>
                   <dt>Supplier Contact Information</dt>
-                  <dd>
+                  {contact && <dd>
                     {contact.get('name')}<br />
                     {contact.get('email')}<br />
                     {contact.get('telephone')}
-                  </dd>
-                </dl>}
+                  </dd>}
+                </dl>
               </td>
             </tr>
           </tbody>
@@ -238,6 +240,7 @@ class Supplier extends CRDPage {
                     );
                   }}
                   indicators={indicators[corruptionType]}
+                  showRawNumbers
                 />
               </div>
             );
@@ -314,7 +317,7 @@ class Supplier extends CRDPage {
               zoomedWidth={width}
               cutData={cutWinsAndLosses}
             >
-              <TitleBelow title="Wins & Flags by Procuring Entity">
+              <TitleBelow title="Wins & flags by procuring entity">
                 <WinsAndLosses
                   filters={this.injectSupplierFilter(filters, id)}
                 />
@@ -329,7 +332,7 @@ class Supplier extends CRDPage {
               cutData={cutNrFlags}
             >
               <TitleBelow
-                title="No. Times Each Indicator is Flagged in Procurements Won by Supplier"
+                title="No. of flags per indicator in procurements won by supplier"
               >
                 <FlaggedNr
                   filters={this.injectSupplierFilter(filters, id)}
