@@ -82,7 +82,9 @@ public abstract class GenericOCDSController {
     }
 
     protected <Z> List<Z> releaseAgg(Aggregation agg, Class<Z> clazz) {
-        return mongoTemplate.aggregate(agg, "release", clazz).getMappedResults();
+        return mongoTemplate.aggregate(
+                agg.withOptions(Aggregation.newAggregationOptions().allowDiskUse(true).build()), "release", clazz)
+                .getMappedResults();
     }
 
     /**
