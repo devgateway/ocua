@@ -1,27 +1,24 @@
-import {Map} from "immutable";
-import {pluck, range} from "../tools";
-import Table from "../visualizations/tables/index";
-import ReactDOMServer from "react-dom/server";
-import CustomPopupChart from "./custom-popup-chart";
-import CRDPage from "./page";
-import {colorLuminance} from "./tools";
-
-const pluckObj = (field, obj) => Object.keys(obj).map(key => obj[key][field]);
+import { range } from '../../tools';
+import CustomPopupChart from '../custom-popup-chart';
+import CRDPage from '../page';
+import { colorLuminance, wireProps } from '../tools';
+import ProcurementsTable from '../procurements-table';
+import { POPUP_HEIGHT } from '../constants';
 
 const TRACES = ['COLLUSION', 'FRAUD', 'RIGGING'];
 
-class CorruptionType extends CustomPopupChart{
-  groupData(data){
-    let grouped = {};
-    TRACES.forEach(trace => {
+class CorruptionType extends CustomPopupChart {
+  groupData(data) {
+    const grouped = {};
+    TRACES.forEach((trace) => {
       grouped[trace] = {};
     });
 
-    const {monthly} = this.props;
-    data.forEach(datum => {
+    const { monthly } = this.props;
+    data.forEach((datum) => {
       const type = datum.get('type');
       let date;
-      if(monthly){
+      if (monthly) {
         const month = datum.get('month');
         date = this.t(`general:months:${month}`);
       } else {
@@ -34,28 +31,32 @@ class CorruptionType extends CustomPopupChart{
     return grouped;
   }
 
-  getData(){
+  getData() {
     const data = super.getData();
-    if(!data) return [];
-    const {styling, months, monthly, years} = this.props;
+    if (!data) return [];
+    const { styling, months, monthly, years } = this.props;
     const grouped = this.groupData(data);
     return Object.keys(grouped).map((type, index) => {
       const dataForType = grouped[type];
-      let values = [], dates = [];
-      if(monthly){
+      let values = [];
+      let dates = [];
+      if (monthly) {
         dates = range(1, 12)
           .filter(month => months.has(month))
           .map(month => this.t(`general:months:${month}`));
 
-        values = dates.map(month => dataForType[month] ? dataForType[month].flaggedCount : 0);
-      } else {
+        values = dates.map(month => (dataForType[month] ? dataForType[month].flaggedCount : 0));
+      } else if (years.count()) {
         dates = years.sort().toArray();
+        values = dates.map(year => (dataForType[year] ? dataForType[year].flaggedCount : 0));
+      } else {
+        dates = Object.keys(dataForType).sort();
         values = dates.map(year => dataForType[year] ? dataForType[year].flaggedCount : 0);
       }
 
-      if(dates.length == 1){
-        dates.unshift("");
-        dates.push(" ");
+      if (dates.length === 1) {
+        dates.unshift('');
+        dates.push(' ');
         values.unshift(0);
         values.push(0);
       }
@@ -68,17 +69,17 @@ class CorruptionType extends CustomPopupChart{
         name: this.t(`crd:corruptionType:${type}:name`),
         fillcolor: styling.charts.traceColors[index],
         line: {
-          color: colorLuminance(styling.charts.traceColors[index], -.3)
-        }
-      }
+          color: colorLuminance(styling.charts.traceColors[index], -0.3),
+        },
+      };
     });
   }
 
-  getLayout(){
+  getLayout() {
     return {
       hovermode: 'closest',
       xaxis: {
-        type: 'category'
+        type: 'category',
       },
       yaxis: {},
       legend: {
@@ -86,33 +87,46 @@ class CorruptionType extends CustomPopupChart{
         xanchor: 'right',
         yanchor: 'bottom',
         x: 1,
-        y: 1
-      }
-    }
+        y: 1,
+      },
+    };
   }
 
-  getPopup(){
-    const {popup} = this.state;
+  getPopup() {
+    const { popup } = this.state;
     const { year, traceIndex } = popup;
     const corruptionType = TRACES[traceIndex];
-    const {indicatorTypesMapping} = this.props;
+    const { indicatorTypesMapping } = this.props;
     const data = this.groupData(super.getData());
-    if(!data[corruptionType]) return null;
+    if (!data[corruptionType]) return null;
     const dataForPoint = data[corruptionType][year];
-    if(!dataForPoint) return null;
+    if (!dataForPoint) return null;
     const indicatorCount =
       Object.keys(indicatorTypesMapping).filter(indicatorId =>
         indicatorTypesMapping[indicatorId].types.indexOf(dataForPoint.type) > -1
       ).length;
 
+    const percentFlaggedLabel = this.t('crd:overview:overTimeChart:percentFlagged');
+
+    let height = POPUP_HEIGHT;
+    let { top } = popup;
+    if (percentFlaggedLabel.length > 30) {
+      const delta = 30;
+      height += delta;
+      if (popup.toTheLeft) {
+        top += delta / 2;
+      }
+      top -= delta;
+    }
+
     return (
-      <div className="crd-popup" style={{top: popup.top, left: popup.left}}>
+      <div className="crd-popup" style={{ top, left: popup.left, height }}>
         <div className="row">
           <div className="col-sm-12 info text-center">
             {year}
           </div>
           <div className="col-sm-12">
-            <hr/>
+            <hr />
           </div>
           <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:indicators')}</div>
           <div className="col-sm-5 text-left info">{indicatorCount}</div>
@@ -120,72 +134,50 @@ class CorruptionType extends CustomPopupChart{
           <div className="col-sm-5 text-left info">{dataForPoint.flaggedCount}</div>
           <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:totalProcurementsFlagged')}</div>
           <div className="col-sm-5 text-left info">{dataForPoint.flaggedProjectCount}</div>
-          <div className="col-sm-7 text-right title">{this.t('crd:overview:overTimeChart:percentFlagged')}</div>
+          <div className="col-sm-7 text-right title">{percentFlaggedLabel}</div>
           <div className="col-sm-5 text-left info">{dataForPoint.percent.toFixed(2)}%</div>
         </div>
-        <div className="arrow"/>
+        <div className="arrow" />
       </div>
-    )
+    );
   }
 }
 
 CorruptionType.endpoint = 'percentTotalProjectsFlaggedByYear';
 
-import ProcurementsTable from "./procurements-table";
-
-class TopFlaggedContracts extends ProcurementsTable{
-  getClassName(){
-    return "table-top-flagged-contracts";
-  }
-}
-
-TopFlaggedContracts.endpoint = 'corruptionRiskOverviewTable?pageSize=10';
-
-class OverviewPage extends CRDPage{
-  constructor(...args){
+class OverviewPage extends CRDPage {
+  constructor(...args) {
     super(...args);
     this.state = {
-      corruptionType: null,
-      topFlaggedContracts: null
-    }
+      topFlaggedContracts: null,
+    };
   }
 
-  render(){
-    const {corruptionType, topFlaggedContracts} = this.state;
-    const { filters, translations, years, monthly, months, indicatorTypesMapping, styling, width, navigate } = this.props;
+  render() {
+    const { indicatorTypesMapping, styling, width, navigate } = this.props;
     return (
       <div className="page-overview">
         <section className="chart-corruption-types">
           <h3 className="page-header">{this.t('crd:overview:overTimeChart:title')}</h3>
           <CorruptionType
-            filters={filters}
-            requestNewData={(_, corruptionType) => this.setState({corruptionType})}
-            translations={translations}
-            data={corruptionType}
-            years={years}
-            monthly={monthly}
-            months={months}
+            {...wireProps(this, 'corruptionType')}
             styling={styling}
             indicatorTypesMapping={indicatorTypesMapping}
             width={width - 20}
-            margin={{t: 0, b: 40, r: 40, pad: 20}}
+            margin={{ t: 0, b: 40, r: 40, pad: 20 }}
           />
         </section>
         <section>
           <h3 className="page-header">{this.t('crd:overview:topFlagged:title')}</h3>
-          <TopFlaggedContracts
-            filters={filters}
-            data={topFlaggedContracts}
-            translations={translations}
-            years={years}
-            monthly={monthly}
-            months={months}
-            requestNewData={(_, topFlaggedContracts) => this.setState({topFlaggedContracts})}
+          <ProcurementsTable
+            {...wireProps(this, 'topFlaggedContracts')}
+            dataEP="corruptionRiskOverviewTable"
+            countEP="corruptionRiskOverviewTable/count"
             navigate={navigate}
           />
         </section>
       </div>
-    )
+    );
   }
 }
 

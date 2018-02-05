@@ -20,7 +20,6 @@ import org.devgateway.toolkit.persistence.mongo.aggregate.CustomProjectionOperat
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -60,24 +59,22 @@ public class AverageNumberOfTenderersController extends GenericOCDSController {
     public List<DBObject> averageNumberOfTenderersYearly(@ModelAttribute @Valid final YearFilterPagingRequest filter) {
 
         DBObject project = new BasicDBObject();
-        addYearlyMonthlyProjection(filter, project, MongoConstants.FieldNames.TENDER_PERIOD_START_DATE_REF);
-        project.put("tender.numberOfTenderers", 1);
+        addYearlyMonthlyProjection(filter, project, ref(MongoConstants.FieldNames.TENDER_PERIOD_START_DATE));
+        project.put(MongoConstants.FieldNames.TENDER_NO_TENDERERS, 1);
 
         Aggregation agg = newAggregation(
-                match(where("tender.numberOfTenderers").gt(0)
+                match(where(MongoConstants.FieldNames.TENDER_NO_TENDERERS).gt(0)
                         .and(MongoConstants.FieldNames.TENDER_PERIOD_START_DATE).exists(true)
                         .andOperator(getYearDefaultFilterCriteria(filter,
                                 MongoConstants.FieldNames.TENDER_PERIOD_START_DATE))),
                 new CustomProjectionOperation(project),
-                group(getYearlyMonthlyGroupingFields(filter)).avg("tender.numberOfTenderers")
+                group(getYearlyMonthlyGroupingFields(filter)).avg(MongoConstants.FieldNames.TENDER_NO_TENDERERS)
                         .as(Keys.AVERAGE_NO_OF_TENDERERS),
                 transformYearlyGrouping(filter).andInclude(Keys.AVERAGE_NO_OF_TENDERERS),
                 getSortByYearMonth(filter), skip(filter.getSkip()),
                 limit(filter.getPageSize()));               
 
-        AggregationResults<DBObject> results = mongoTemplate.aggregate(agg, "release", DBObject.class);
-        List<DBObject> list = results.getMappedResults();
-        return list;
+       return releaseAgg(agg);
     }
 
     @ApiOperation(value = "Calculate average number of tenderers. The endpoint can be filtered"
@@ -89,22 +86,20 @@ public class AverageNumberOfTenderersController extends GenericOCDSController {
     public List<DBObject> averageNumberOfTenderers(@ModelAttribute @Valid final YearFilterPagingRequest filter) {
 
         DBObject project = new BasicDBObject();
-        addYearlyMonthlyProjection(filter, project, MongoConstants.FieldNames.TENDER_PERIOD_START_DATE_REF);
-        project.put("tender.numberOfTenderers", 1);
+        addYearlyMonthlyProjection(filter, project, ref(MongoConstants.FieldNames.TENDER_PERIOD_START_DATE));
+        project.put(MongoConstants.FieldNames.TENDER_NO_TENDERERS, 1);
 
         Aggregation agg = newAggregation(
-                match(where("tender.numberOfTenderers").gt(0)
+                match(where(MongoConstants.FieldNames.TENDER_NO_TENDERERS).gt(0)
                         .and(MongoConstants.FieldNames.TENDER_PERIOD_START_DATE).exists(true)
                         .andOperator(getYearDefaultFilterCriteria(filter,
                                 MongoConstants.FieldNames.TENDER_PERIOD_START_DATE))),
                 new CustomProjectionOperation(project),
-                group().avg("tender.numberOfTenderers")
+                group().avg(MongoConstants.FieldNames.TENDER_NO_TENDERERS)
                         .as(Keys.AVERAGE_NO_OF_TENDERERS));
 
 
-        AggregationResults<DBObject> results = mongoTemplate.aggregate(agg, "release", DBObject.class);
-        List<DBObject> list = results.getMappedResults();
-        return list;
+       return releaseAgg(agg);
     }
 
 
