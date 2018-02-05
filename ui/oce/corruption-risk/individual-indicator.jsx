@@ -127,6 +127,7 @@ class ProjectTable extends ProcurementsTable{
 
   getClassName(){
     return "table-project-table";
+    );
   }
 }
 

@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
@@ -100,7 +101,8 @@ public class FrequentSuppliersTimeIntervalController extends GenericOCDSControll
                         count().as("count"),
                 project("count").and("identifier").previousOperation(),
                 match(where("count").gt(maxAwards)),
-                sort(Sort.Direction.DESC, "count")
+                sort(Sort.Direction.DESC, "count"),
+                limit(50000)
         );
 
         return releaseAgg(agg, FrequentSuppliersResponse.class);
