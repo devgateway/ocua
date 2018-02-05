@@ -113,20 +113,6 @@ class IndividualIndicatorChart extends CustomPopupChart {
         </div>
         <div className="arrow" />
       </div>
-    )
-  }
-}
-
-import ProcurementsTable from "./procurements-table";
-
-class ProjectTable extends ProcurementsTable{
-  getCustomEP(){
-    const {corruptionType, indicator} = this.props;
-    return `flags/${indicator}/releases?pageSize=170&flagType=${corruptionType}`;
-  }
-
-  getClassName(){
-    return "table-project-table";
     );
   }
 }
