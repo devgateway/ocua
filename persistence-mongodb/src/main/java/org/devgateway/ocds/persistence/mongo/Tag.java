@@ -9,6 +9,9 @@ import java.util.Map;
 
 public enum Tag {
 
+    //this is OCUA specific and is a mistake, it will fail to validate against OCDS standard because
+    //tag is a closed code list and should not be editable
+    bid("bid"),
     planning("planning"),
     planningUpdate("planningUpdate"),
     tender("tender"),
