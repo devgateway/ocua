@@ -4,6 +4,7 @@
 package org.devgateway.ocds.web.rest.controller.request;
 
 import cz.jirutka.validator.collection.constraints.EachPattern;
+import cz.jirutka.validator.collection.constraints.EachRange;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.math.BigDecimal;
@@ -40,10 +41,14 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
             + " matches elements that are NOT in the TreeSet of Ids")
     private TreeSet<String> notProcuringEntityId;
 
+    // @EachPattern(regexp = "^[\\p{L}0-9]*$")
     @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This is the id of the organization/supplier entity. "
             + "Corresponds to the OCDS Organization.identifier")
     private TreeSet<String> supplierId;
+
+    @ApiModelProperty(value = "This is the new bidder format bids.details.tenderers._id")
+    private TreeSet<String> bidderId;
 
     @ApiModelProperty(value = "This will filter after tender.items.deliveryLocation._id")
     private TreeSet<String> tenderLoc;
@@ -72,6 +77,11 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
             + ", by flags.flaggedStats.type, so it can filter by FRAUD, RIGGING, etc...")
     private TreeSet<String> flagType;
 
+    @ApiModelProperty(value = "This will filter releases based on the count of the flags PER RELEASE, which is stored "
+            + "in flags.totalFlagged. 0 (zero) is not allowed here, if you want to see all the releases where there "
+            + "are no flags, just completely omit this filter.")
+    @EachRange(min = 1)
+    private TreeSet<Integer> totalFlagged;
 
     @ApiModelProperty(value = "Filters after tender.submissionMethod='electronicSubmission', also known as"
             + " eBids")
@@ -79,6 +89,18 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
 
     @ApiModelProperty(value = "Only show the releases that were flagged by at least one indicator")
     private Boolean flagged;
+
+    @ApiModelProperty(hidden = true)
+    private Boolean awardFiltering = false;
+
+    public DefaultFilterPagingRequest awardFiltering() {
+        awardFiltering = true;
+        return this;
+    }
+
+    public Boolean getAwardFiltering() {
+        return awardFiltering;
+    }
 
     public String getText() {
         return text;
@@ -211,5 +233,21 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
 
     public void setAwardStatus(TreeSet<String> awardStatus) {
         this.awardStatus = awardStatus;
+    }
+
+    public TreeSet<String> getBidderId() {
+        return bidderId;
+    }
+
+    public void setBidderId(TreeSet<String> bidderId) {
+        this.bidderId = bidderId;
+    }
+
+    public TreeSet<Integer> getTotalFlagged() {
+        return totalFlagged;
+    }
+
+    public void setTotalFlagged(TreeSet<Integer> totalFlagged) {
+        this.totalFlagged = totalFlagged;
     }
 }
