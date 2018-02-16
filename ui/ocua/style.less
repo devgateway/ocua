@@ -218,6 +218,12 @@ aside [role=navigation] a{
     background-color: @active-color;
     color: @tab-light-grey;
   }
+
+  &:nth-child(2) {
+    pointer-events: none;
+    opacity: .5;
+  }
+
   .circle{
     background-color: @circle-grey;
     border-radius: 50%;
