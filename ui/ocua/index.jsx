@@ -1,7 +1,6 @@
 import ReactDOM from "react-dom";
 import OCApp from "../oce";
 import OverviewTab from '../oce/tabs/overview';
-import LocationTab from '../oce/tabs/location';
 import CompetitivenessTab from '../oce/tabs/competitiveness';
 import EfficiencyTab from '../oce/tabs/efficiency';
 import EProcurementTab from '../oce/tabs/e-procurement';
@@ -11,11 +10,17 @@ import styles from "./style.less";
 import ViewSwitcher from "../oce/switcher.jsx";
 import CorruptionRickDashboard from "../oce/corruption-risk";
 
+class OCUALocationTab {
+  static getName() { return 'Location'; }
+}
+
+OCUALocationTab.icon = 'planning';
+
 class OCEChild extends OCApp{
   constructor(props) {
     super(props);
     this.registerTab(OverviewTab);
-    this.registerTab(LocationTab);
+    this.registerTab(OCUALocationTab);
     this.registerTab(CompetitivenessTab);
     this.registerTab(EfficiencyTab);
     this.registerTab(EProcurementTab);
