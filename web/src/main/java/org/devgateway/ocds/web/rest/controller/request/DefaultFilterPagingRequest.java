@@ -22,11 +22,11 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
             + "http://standard.open-contracting.org/latest/en/schema/codelists/#award-status")
     private TreeSet<String> awardStatus;
 
-    @EachPattern(regexp = "^[a-zA-Z0-9]*$")
+    @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This corresponds to the tender.items.classification._id")
     private TreeSet<String> bidTypeId;
 
-    @EachPattern(regexp = "^[a-zA-Z0-9]*$")
+    @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value =
             "This corresponds the negated bidTypeId filter, matches elements that are NOT in the TreeSet of Ids")
     private TreeSet<String> notBidTypeId;
@@ -41,7 +41,6 @@ public class DefaultFilterPagingRequest extends GenericPagingRequest {
             + " matches elements that are NOT in the TreeSet of Ids")
     private TreeSet<String> notProcuringEntityId;
 
-    // @EachPattern(regexp = "^[\\p{L}0-9]*$")
     @EachPattern(regexp = "^[a-zA-Z0-9\\-]*$")
     @ApiModelProperty(value = "This is the id of the organization/supplier entity. "
             + "Corresponds to the OCDS Organization.identifier")
