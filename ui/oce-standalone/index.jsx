@@ -101,6 +101,21 @@ class OCEChild extends OCApp {
     );
   }
 
+  languageSwitcher() {
+    const { TRANSLATIONS } = this.constructor;
+    const { locale: selectedLocale } = this.state;
+    if (Object.keys(TRANSLATIONS).length <= 1) return null;
+    return Object.keys(TRANSLATIONS).map(locale => (
+      <a
+        href="javascript:void(0);"
+        onClick={() => this.setLocale(locale)}
+        className={cn({ active: locale === selectedLocale })}
+      >
+        {locale.split('_')[0]}
+      </a>
+    ));
+  }
+
   navigationLink(Tab, index){
     if (OverviewTab !== Tab) return super.navigationLink(Tab, index);
     const { getName, icon } = Tab;
@@ -136,7 +151,10 @@ class OCEChild extends OCApp {
             <img src="assets/dg-logo.svg" />
             {this.dashboardSwitcher()}
           </div>
-          <div className="col-sm-3">
+          <div className="col-sm-1 header-icons language-switcher">
+            {this.languageSwitcher()}
+          </div>
+          <div className="col-sm-2">
             {this.loginBox()}
           </div>
         </header>
@@ -193,7 +211,9 @@ class OCEChild extends OCApp {
 }
 
 const translations = {
-  en_US: require('../../web/public/languages/en_US.json')
+  en_US: require('../../web/public/languages/en_US.json'),
+  es_ES: require('../../web/public/languages/es_ES.json'),
+  fr_FR: require('../../web/public/languages/fr_FR.json'),
 };
 
 const BILLION = 1000000000;
