@@ -196,7 +196,7 @@
   "crd:indicators:i077:description": "High number of competitive contract awards to one supplier within a calendar year",
   "crd:indicators:i077:indicator": "A high number of contracts are awarded to one supplier within a one-year time period by a single procuring entity.",
   "crd:indicators:i077:eligibility": "Award has been made.",
-  "crd:indicators:i077:thresholds": "Minimum of 4 awards made to 1 supplier by 1 procuring entity.",
+  "crd:indicators:i077:thresholds": "Minimum of 4 awards made to 1 supplier by 1 procuring entity during a 1 year period.",
   "crd:indicators:i083:name": "Winner-Loser Pattern",
   "crd:indicators:i083:description": "When X supplier wins, same set of tenderers loses (at least twice)",
   "crd:indicators:i083:indicator": "When one supplier wins, the same tenderers always lose.",
@@ -271,6 +271,7 @@
   "crd:procurementsTable:tenderDate": "Tender Date",
   "crd:procurementsTable:flagType": "Flag Type",
   "crd:procurementsTable:noOfFlags": "No. of Flags",
+  "crd:procurementsTable:individualIndicator:noOfFlags": "No. of $#$ Flags",
   "crd:procurementsTable:associatedFlags": "Associated $#$ flags",
   "crd:individualIndicatorChart:flaggedProcurements": "Flagged Procurements",
   "crd:individualIndicatorChart:eligibleProcurements": "Eligible Procurements",
@@ -347,5 +348,8 @@
   "crd:supplier:flaggedNr:popup:sg": "$#$ flag for \"$#$\"",
   "crd:supplier:flaggedNr:popup:pl": "$#$ flags for \"$#$\"",
   "crd:supplier:crosstabs:explanation": "This supplier has been involved in procurements that have been flagged $#$ times in relation to $#$",
+  "crd:supplier:table:procurementsWon": "Procurements won",
+  "crd:supplier:table:nrBidders": "Number of bidders",
+  "crd:supplier:table:flagName": "Flag name",
   "crd:procuringEntities:top-search": "Search within procuring entities"
 }
