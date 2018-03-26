@@ -21,7 +21,7 @@ public final class MongoConstants {
 
     public static final int IMPORT_ROW_BATCH = 1000;
 
-    public static final String MONGO_LANGUAGE = "english";
+    public static final String MONGO_LANGUAGE = "russian";
 
     public static final class FieldNames {
         public static final String BUYER_ID = "buyer._id";
