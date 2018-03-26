@@ -374,7 +374,9 @@ public class Organization implements Identifiable {
 
         buyer("buyer"),
 
-        supplier("supplier");
+        supplier("supplier"),
+
+        bidder("bidder");
 
         private final String value;
 
