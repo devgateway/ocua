@@ -1,41 +1,10 @@
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import translatable from '../../../../translatable';
 import { supplierProcurementsData, page, pageSize, supplierProcurementsCount } from './state';
+import BootstrapTableWrapper from '../../../archive/bootstrap-table-wrapper';
+import style from './style.less';
 
 const NAME = 'supplierProcurementsComponent';
-
-class BootstrapTableWrapper extends React.PureComponent {
-  render() {
-    const { columns, data, page, pageSize, onPageChange, onSizePerPageList, count } = this.props;
-    return (
-      <BootstrapTable
-        data={data}
-        striped
-        bordered={false}
-        pagination
-        remote
-        fetchInfo={{
-          dataTotalSize: count,
-        }}
-        options={{
-          page,
-          onPageChange,
-          sizePerPage: pageSize,
-          sizePerPageList: [20, 50, 100, 200].map(value => ({ text: value, value })),
-          onSizePerPageList,
-          paginationPosition: 'both',
-        }}
-      >
-        <TableHeaderColumn dataField="id" isKey hidden/>
-        {columns.map(({ title, ...props }) => (
-          <TableHeaderColumn {...props}>
-            {title}
-          </TableHeaderColumn>
-        ))}
-      </BootstrapTable>
-    )
-  }
-}
 
 export default class Table extends translatable(React.PureComponent) {
   constructor(...args){
@@ -119,9 +88,12 @@ export default class Table extends translatable(React.PureComponent) {
         onPageChange={newPage => page.assign(NAME, newPage)}
         onSizePerPageList={newPageSize => pageSize.assign(NAME, newPageSize)}
         count={count}
+        containerClass="supplier-procurements-table"
         columns={[{
             title: this.t('crd:contracts:baseInfo:procuringEntityName'),
             dataField: 'PEName',
+            className: 'pe-name',
+            columnClassName: 'pe-name',
             dataFormat: this.formatPE.bind(this),
         }, {
             title: this.t('crd:contracts:list:awardAmount'),
